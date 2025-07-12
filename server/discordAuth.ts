@@ -48,10 +48,11 @@ export async function setupAuth(app: Express) {
     return;
   }
 
-  const callbackURL = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}/api/callback`;
-  console.log("Discord OAuth callback URL:", callbackURL);
-  console.log("Discord Client ID:", process.env.DISCORD_CLIENT_ID);
-
+    // Use production URL for Render deployment, fallback to Replit for development
+  const callbackURL = process.env.NODE_ENV === 'production' 
+    ? 'https://cidal-prismgen.onrender.com/api/callback'
+    : `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}/api/callback`;
+  
   // Discord OAuth Strategy
   passport.use(new DiscordStrategy({
     clientID: process.env.DISCORD_CLIENT_ID!,
