@@ -11,5 +11,11 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Clean up the database URL to handle spaces in database names
+const cleanDatabaseUrl = process.env.DATABASE_URL.replace(/\s+/g, '%20');
+
+export const pool = new Pool({ 
+  connectionString: cleanDatabaseUrl,
+  ssl: { rejectUnauthorized: false }
+});
 export const db = drizzle({ client: pool, schema });
