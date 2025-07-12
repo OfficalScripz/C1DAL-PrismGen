@@ -8,9 +8,30 @@ export async function registerRoutes(app: Express, options: { skipBot?: boolean 
   // Auth middleware
   await setupAuth(app);
 
-  // Start Discord bot (only if not skipped for Vercel)
-  if (!options.skipBot) {
-    discordBot.start();
+    // Auth middleware
+  await setupAuth(app);
+
+  // Initialize database schema first
+  try {
+    console.log('Initializing database schema...');
+    await storage.getStats(); // This will initialize the database connection
+    console.log('✅ Database connection established');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    console.log('⚠️  Application will continue without database features');
+  }
+
+  // Start Discord bot (only if not skipped and environment variables are available)
+  if (!options.skipBot && process.env.DISCORD_TOKEN && process.env.DISCORD_CLIENT_ID) {
+    try {
+      await discordBot.start();
+      console.log('✅ Discord bot started successfully');
+    } catch (error) {
+      console.error('❌ Discord bot failed to start:', error);
+      console.log('⚠️  Application will continue without Discord bot');
+    }
+  } else {
+    console.log('⚠️  Discord bot not started - missing environment variables or explicitly skipped');
   }
 
   // Auth routes
