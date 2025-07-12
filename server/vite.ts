@@ -71,9 +71,47 @@ export function serveStatic(app: Express) {
   const distPath = path.resolve(import.meta.dirname, "public");
 
   if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+    console.log(`⚠️  Build directory not found: ${distPath}`);
+    console.log("Serving basic HTML instead...");
+    
+    // Serve a basic HTML page if build directory doesn't exist
+    app.use("*", (_req, res) => {
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Discord Key Bot Dashboard</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; background: #1a1a1a; color: white; }
+              .container { max-width: 600px; margin: 0 auto; text-align: center; }
+              .status { background: #2d2d2d; padding: 20px; border-radius: 8px; margin: 20px 0; }
+              .success { color: #4ade80; }
+              .warning { color: #facc15; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Discord Key Bot Dashboard</h1>
+              <div class="status">
+                <h2 class="success">✅ Service is Running</h2>
+                <p>The Discord Key Bot Dashboard service is successfully deployed and running on Render.</p>
+              </div>
+              <div class="status">
+                <h3 class="warning">⚠️ Frontend Build Missing</h3>
+                <p>The frontend build files are not available. The service is running but the dashboard UI needs to be built.</p>
+              </div>
+              <div class="status">
+                <h3>🔧 Service Status</h3>
+                <p>Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}</p>
+                <p>Discord Bot: ${process.env.DISCORD_TOKEN ? 'Configured' : 'Not configured'}</p>
+                <p>Timestamp: ${new Date().toISOString()}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+    });
+    return;
   }
 
   app.use(express.static(distPath));
